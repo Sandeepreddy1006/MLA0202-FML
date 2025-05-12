@@ -1,0 +1,26 @@
+def find_s_algorithm(examples):
+    """
+    examples: List of tuples where each tuple is (features, label)
+              features is a list of attribute values
+              label is either 'Yes' (positive) or 'No' (negative)
+    """
+    for features, label in examples:
+        if label == 'Yes':
+            hypothesis = features.copy()
+            break
+    else:
+        return None  
+    for features, label in examples:
+        if label == 'Yes':
+            for i in range(len(hypothesis)):
+                if hypothesis[i] != features[i]:
+                    hypothesis[i] = '?' 
+    return hypothesis
+dataset = [
+    (['Sunny', 'Warm', 'Normal', 'Strong', 'Warm', 'Same'], 'Yes'),
+    (['Sunny', 'Warm', 'High', 'Strong', 'Warm', 'Same'], 'Yes'),
+    (['Rainy', 'Cold', 'High', 'Strong', 'Warm', 'Change'], 'No'),
+    (['Sunny', 'Warm', 'High', 'Strong', 'Cool', 'Change'], 'Yes')
+]
+hypothesis = find_s_algorithm(dataset)
+print("Final Hypothesis:", hypothesis)
