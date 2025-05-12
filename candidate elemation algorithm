@@ -1,0 +1,49 @@
+def more_general(h1, h2):
+    """Check if hypothesis h1 is more general than h2"""
+    return all(x == '?' or x == y for x, y in zip(h1, h2))
+def consistent(hypothesis, instance):
+    """Check if hypothesis is consistent with the instance"""
+    return all(h == '?' or h == val for h, val in zip(hypothesis, instance))
+def candidate_elimination(data):
+    attributes = len(data[0]) - 1
+    S = data[0][:-1]  
+    G = [['?' for _ in range(attributes)]]  
+    for instance in data:
+        x, label = instance[:-1], instance[-1]
+        if label == 'yes':
+            G = [g for g in G if consistent(g, x)] 
+            for i in range(attributes):
+                if S[i] != x[i]:
+                    S[i] = '?'
+        else:
+            G_new = []
+            for g in G:
+                if consistent(g, x):
+                    for i in range(attributes):
+                        if g[i] == '?':
+                            if S[i] != x[i]:
+                                new_h = g[:]
+                                new_h[i] = S[i]
+                                if new_h not in G_new:
+                                    G_new.append(new_h)
+                        elif g[i] != x[i]:
+                            new_h = g[:]
+                            new_h[i] = '?'
+                            if new_h not in G_new:
+                                G_new.append(new_h)
+                else:
+                    G_new.append(g)
+            G = G_new
+
+    return S, G
+dataset = [
+    ["sunny", "warm", "normal", "strong", "warm", "same", "yes"],
+    ["sunny", "warm", "high",   "strong", "warm", "same", "yes"],
+    ["rainy", "cold", "high",   "strong", "warm", "change", "no"],
+    ["sunny", "warm", "normal", "strong", "warm", "same", "yes"]
+]
+S_final, G_final = candidate_elimination(dataset)
+print("Final Specific Hypothesis (S):", S_final)
+print("Final General Hypotheses (G):")
+for g in G_final:
+    print(g)
