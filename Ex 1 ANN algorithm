@@ -1,0 +1,56 @@
+import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+iris=load_iris()
+X=iris.data
+y=iris.target.reshape(-1,1)
+
+encoder=OneHotEncoder(sparse=False)
+y_encoded=encoder.fit_transform(y)
+
+scaler=StandardScaler()
+X=scaler.fit_transform(X)
+
+X_train,X_test,y_train,y_test=train_test_split(X,y_encoded,test_size=0.2,random_state=42)
+
+def sigmoid(x): return 1/(1+np.exp(-x))
+def sigmoid_derivative(x): return x*(1-x)
+
+input_size=X_train.shape[1]
+hidden_size=6
+output_size=y_train.shape[1]
+
+np.random.seed(42)
+W1=np.random.rand(input_size,hidden_size)
+b1=np.zeros((1,hidden_size))
+W2=np.random.rand(hidden_size,output_size)
+b2=np.zeros((1,output_size))
+
+epochs=1000
+lr=0.1
+
+for epoch in range(epochs):
+    z1=np.dot(X_train,W1)+b1
+    a1=sigmoid(z1)
+    z2=np.dot(a1,W2)+b2
+    a2=sigmoid(z2)
+    loss=np.mean((y_train-a2)**2)
+    d2=(y_train-a2)*sigmoid_derivative(a2)
+    d1=np.dot(d2,W2.T)*sigmoid_derivative(a1)
+    W2+=np.dot(a1.T,d2)*lr
+    b2+=np.sum(d2,axis=0,keepdims=True)*lr
+    W1+=np.dot(X_train.T,d1)*lr
+    b1+=np.sum(d1,axis=0,keepdims=True)*lr
+    if epoch%100==0: print(f"Epoch {epoch}, Loss: {loss:.4f}")
+
+def predict(X):
+    a1=sigmoid(np.dot(X,W1)+b1)
+    a2=sigmoid(np.dot(a1,W2)+b2)
+    return np.argmax(a2,axis=1)
+
+predictions=predict(X_test)
+actual=np.argmax(y_test,axis=1)
+accuracy=np.mean(predictions==actual)
+print(f"Test Accuracy: {accuracy:.2f}")
