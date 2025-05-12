@@ -1,0 +1,40 @@
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier, export_text
+
+# Dataset
+data = {
+    'Outlook': ['Sunny', 'Sunny', 'Overcast', 'Rain', 'Rain', 'Rain',
+                'Overcast', 'Sunny', 'Sunny', 'Rain', 'Sunny', 'Overcast', 'Overcast', 'Rain'],
+    'Temperature': ['Hot', 'Hot', 'Hot', 'Mild', 'Cool', 'Cool',
+                    'Cool', 'Mild', 'Cool', 'Mild', 'Mild', 'Mild', 'Hot', 'Mild'],
+    'Humidity': ['High', 'High', 'High', 'High', 'Normal', 'Normal',
+                 'Normal', 'High', 'Normal', 'Normal', 'Normal', 'High', 'Normal', 'High'],
+    'Wind': ['Weak', 'Strong', 'Weak', 'Weak', 'Weak', 'Strong',
+             'Strong', 'Weak', 'Weak', 'Weak', 'Strong', 'Strong', 'Weak', 'Strong'],
+    'PlayTennis': ['No', 'No', 'Yes', 'Yes', 'Yes', 'No',
+                   'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No']
+}
+
+df = pd.DataFrame(data)
+
+# Convert categorical variables to numeric
+df_encoded = pd.get_dummies(df.drop('PlayTennis', axis=1))
+target = df['PlayTennis'].map({'Yes': 1, 'No': 0})
+
+# Build ID3 decision tree
+clf = DecisionTreeClassifier(criterion='entropy')  # ID3 uses entropy
+clf.fit(df_encoded, target)
+
+# Display tree rules
+tree_rules = export_text(clf, feature_names=list(df_encoded.columns))
+print(tree_rules)
+
+# Classify new sample
+sample = pd.DataFrame({
+    'Outlook_Sunny': [1], 'Outlook_Overcast': [0], 'Outlook_Rain': [0],
+    'Temperature_Hot': [0], 'Temperature_Mild': [1], 'Temperature_Cool': [0],
+    'Humidity_High': [0], 'Humidity_Normal': [1],
+    'Wind_Weak': [1], 'Wind_Strong': [0]
+})
+prediction = clf.predict(sample)
+print("Prediction (1=Yes, 0=No):", prediction[0])
